@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 public class Material {
     Color diffuse;
     Color specular;
+    float reflectiveness;
 
     public Color getDiffuse() {
         return diffuse;
@@ -16,9 +17,18 @@ public class Material {
         return specular;
     }
 
-    public Material(Color diffuse, Color specular){
+    public float getReflectiveness(){
+        return reflectiveness;
+    }
+
+    public Material(Color diffuse, Color specular, float reflectiveness){
         this.diffuse = diffuse;
         this.specular = specular;
+        this.reflectiveness = reflectiveness;
+    }
+
+    public Material(Color diffuse, Color specular){
+        this(diffuse, specular, 0);
     }
 
 

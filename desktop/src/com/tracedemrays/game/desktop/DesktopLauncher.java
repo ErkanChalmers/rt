@@ -7,8 +7,8 @@ import com.tracedemrays.game.Controller;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.width = 300;
-		config.height = 200;
+		config.width = 384;
+		config.height = 216;
 		new LwjglApplication(new Controller(), config);
 	}
 }

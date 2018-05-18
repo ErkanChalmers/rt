@@ -29,30 +29,42 @@ public class Environment {
     static List<LightSource> lights = new ArrayList();
 
     static void init(){
-        lights.add(new LightSource(new Vector3(4, 0, 6), new Color(1f,1f,1f, 1), 1f));
+        lights.add(new LightSource(new Vector3(4, 0, 6), new Color(1f,1f,1f, 1), .2f));
        // lights.add(new LightSource(new Vector3(4, 2, 6), new Color(0f,1f,0.8f, 1), 1f));
 
         entities.add(new Entity(
-                new Sphere(new Vector3(0, 0, 10), 2),
-                new Material(new Color(.8f, .9f, 1f, 1), null)));
+                new Sphere(new Vector3(0, 0, 10), 3),
+                new Material(new Color(1f, .6f, 0f, 1), null, .9f)));
 
         entities.add(new Entity(
                 new Plane(new Vector3(5, 0, 0), new Vector3(-1,0,0)),
-                new Material(new Color(0,0,1,1), null)));
+                new Material(new Color(1,1,1,1), null, .1f)));
 
 
         entities.add(new Entity(
                 new Plane(new Vector3(-5, 0, 0), new Vector3(1,0,0)),
-                new Material(new Color(1f,0,0,1), null)));
+                new Material(new Color(1f,1,1,1), null, .1f)));
 
 
         entities.add(new Entity(
-                new Plane(new Vector3(0, 0, 20), new Vector3(0,0,-1)),
-                new Material(new Color(0f,1f,0f,1), null)));
+                new Plane(new Vector3(0, 0, 15), new Vector3(0,0,-1)),
+                new Material(new Color(1f,1f,1f,1), null, .1f)));
+
+        entities.add(new Entity(
+                new Plane(new Vector3(0, -5, 0), new Vector3(0,1,0)),
+                new Material(new Color(1f,0f,1f,1), null, .1f)));
+
+        entities.add(new Entity(
+                new Plane(new Vector3(0, 5, 0), new Vector3(0,-1,0)),
+                new Material(new Color(1f,0f,1f,1), null, .1f)));
+
+        entities.add(new Entity(
+                new Plane(new Vector3(0, 0, -5), new Vector3(0,0,1)),
+                new Material(new Color(1f,.8f,0f,1), null, 1f)));
     }
 
 
-    static Color trace(Ray ray){
+    static Color trace(Ray ray, int recursion){
         float hitDistance = FAR_PLANE;
         Entity entityHit = null;
         for (Entity entity: entities) {
@@ -72,13 +84,17 @@ public class Environment {
 
         Vector3 hitPosition = ray.origin.cpy().add(ray.direction.cpy().scl(hitDistance));
 
+
+        boolean isShadow = false;
+        shadow:
         for (LightSource light: lights) {
             for (Entity entity: entities) {
-                if (isShadow(hitPosition, entity, light))
-                    return Color.BLACK;
+                if (isShadow(hitPosition, entity, light)) {
+                    isShadow = true;
+                    break shadow;
                 }
+            }
         }
-
 
 
 
@@ -86,11 +102,19 @@ public class Environment {
 
         Color color = new Color();
 
-        for (LightSource l : lights){
-            color.add(shade(ray, entityHit, hitPosition, entityHit.getShape().getNormal(hitPosition), l));
+        if (!isShadow) {
+            for (LightSource l : lights) {
+                color.add(shade(ray, entityHit, hitPosition, entityHit.getShape().getNormal(hitPosition), l));
+            }
         }
 
-        return color;
+        if (recursion > 1 && entityHit.getMaterial().getReflectiveness() > 0){
+            Vector3 reflectionDirection = ray.direction.cpy().sub(entityHit.getShape().getNormal(hitPosition).cpy().scl(2 * ray.direction.dot(entityHit.getShape().getNormal(hitPosition))));
+            Ray reflectionRay = new Ray(hitPosition.add(reflectionDirection.cpy().scl(0.1f)), reflectionDirection);
+            return color.mul(1-entityHit.getMaterial().getReflectiveness()).add(trace(reflectionRay, --recursion).mul(entityHit.getMaterial().getReflectiveness()));
+        }
+
+            return color;
     }
 
     static Color shade(Ray ray, Entity entity, Vector3 hitPosition, Vector3 normal, LightSource ls){

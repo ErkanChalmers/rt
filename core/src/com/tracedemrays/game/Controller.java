@@ -15,7 +15,7 @@ import javafx.embed.swing.SwingFXUtils;
 public class Controller extends ApplicationAdapter {
 	SpriteBatch batch;
 	int WIDTH, HEIGHT;
-	final float FIELD_OF_VIEW = 45f;
+	final float FIELD_OF_VIEW = 60f;
 
 	Vector3 right;
 	Vector3 up;
@@ -83,7 +83,7 @@ public class Controller extends ApplicationAdapter {
 				Vector3 direction = fwd.cpy().add(xcomp).add(ycomp).setLength(1);
 
 				Ray r = new Ray(new Vector3(0, 0, 0), direction);
-				Color c = Environment.trace(r);
+				Color c = Environment.trace(r, 5);
 				c.a = 1;
 				pmap.setColor(c);
 				pmap.drawPixel(x, y);
